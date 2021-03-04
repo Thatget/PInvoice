@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">mw_pinvoice_pi_listing.mw_pinvoice_pi_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>mw_pinvoice_columns</spinner>
+        <deps>
+            <dep>mw_pinvoice_pi_listing.mw_pinvoice_pi_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="mw_pinvoice_pi_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <filterUrlParams>
+                <param name="order_id">*</param>
+            </filterUrlParams>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Magento_Sales::sales_invoice</aclResource>
+        <dataProvider class="MW\PInvoice\Ui\Component\DataProvider" name="mw_pinvoice_pi_listing_data_source">
+            <settings>
+                <requestFieldName>ip_id</requestFieldName>
+                <primaryFieldName>ip_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <exportButton name="export_button">
+            <settings>
+                <additionalParams>
+                    <param xsi:type="string" active="true" name="order_id">*</param>
+                </additionalParams>
+            </settings>
+        </exportButton>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters">
+            <filterSelect name="store_id" provider="${ $.parentName }">
+                <settings>
+                    <options class="Magento\Store\Ui\Component\Listing\Column\Store\Options"/>
+                    <caption translate="true">All Store Views</caption>
+                    <label translate="true">Purchased From</label>
+                    <dataScope>store_id</dataScope>
+                    <imports>
+                        <link name="visible">ns = ${ $.ns }, componentType = column, index = ${ $.index }:visible</link>
+                    </imports>
+                </settings>
+            </filterSelect>
+        </filters>
+        <massaction name="listing_massaction">
+            <action name="pdfinvoices_order" class="Magento\Sales\Ui\Component\Control\PdfAction">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="pdfAction" xsi:type="string">sales/invoice/pdfinvoices</item>
+                    </item>
+                </argument>
+                <settings>
+                    <type>pdfinvoices_order</type>
+                    <label translate="true">PDF Invoices</label>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="mw_pinvoice_columns">
+        <settings>
+            <childDefaults>
+                <param name="fieldAction" xsi:type="array">
+                    <item name="provider" xsi:type="string">mw_pinvoice_pi_listing.mw_pinvoice_pi_listing.mw_pinvoice_columns.actions</item>
+                    <item name="target" xsi:type="string">applyAction</item>
+                    <item name="params" xsi:type="array">
+                        <item name="0" xsi:type="string">view</item>
+                        <item name="1" xsi:type="string">${ $.$data.rowIndex }</item>
+                    </item>
+                </param>
+            </childDefaults>
+        </settings>
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="ip_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">PInvoice ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="amount">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Amount</label>
+            </settings>
+        </column>
+        <column name="comment">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Note</label>
+            </settings>
+        </column>
+        <column name="status" class="MW\PInvoice\Ui\Component\Listing\Column\Status">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="label" xsi:type="string" translate="true">Status</item>
+                </item>
+            </argument>
+        </column>
+        <column name="create_at" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Invoice Date</label>
+            </settings>
+        </column>
+        <column name="order_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Order #</label>
+            </settings>
+        </column>
+        <column name="order_increment_id" class="MW\PInvoice\Ui\Component\Listing\Column\Orderid">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="sortable" xsi:type="boolean">false</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="label" xsi:type="string" translate="true">Order Increment</item>
+                </item>
+            </argument>
+        </column>
+<!--        <actionsColumn name="actions" class="MW\PInvoice\Ui\Component\Listing\Column\ViewAction">-->
+<!--            <argument name="data" xsi:type="array">-->
+<!--                <item name="config" xsi:type="array">-->
+<!--                    <item name="viewUrlPath" xsi:type="string">sales/order_invoice/view</item>-->
+<!--                    <item name="urlEntityParamName" xsi:type="string">invoice_id</item>-->
+<!--                </item>-->
+<!--            </argument>-->
+<!--            <settings>-->
+<!--                <indexField>ip_id</indexField>-->
+<!--            </settings>-->
+<!--        </actionsColumn>-->
+    </columns>
+</listing>

@@ -1,0 +1,75 @@
+<?php
+
+/* @var \MW\PInvoice\Block\Adminhtml\Order\Invoice\Create\Form $block */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+?>
+<form id="pinvoice-custom-form" class="order-invoice-edit" method="post"
+      action="<?= $block->escapeUrl($block->getSaveUrl()) ?>">
+    <?= $block->getBlockHtml('formkey') ?>
+    <section class="admin__page-section">
+        <div class="admin__page-section-title">
+            <span class="title"><?= $block->escapeHtml(__('PInvoice Field')) ?></span>
+        </div>
+        <div class="admin__page-section-content">
+            <div class="admin__page-section-item order-comments-history">
+                <div id="history_form" class="admin__page-section-item-content ">
+                    <div class="admin__field">
+                        <label for="pinvoice_comment_text" class="admin__field-label">
+                            <span><?= $block->escapeHtml(__('Comments')) ?></span>
+                        </label>
+                        <div class="admin__field-control">
+                        <textarea id="pinvoice_comment_text"
+                                  name="pinvoice[comment]"
+                                  class="admin__control-textarea"
+                                  rows="3"
+                                  cols="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="invoice_totals" class="admin__page-section-item order-totals">
+                <div class="admin__page-section-item-content order-totals-actions">
+                    <label for="pinvoice_comment_text" class="admin__field-label">
+                        <span><?= $block->escapeHtml(__('Amount')) ?></span>
+                    </label>
+                    <div class="admin__field">
+                        <input type="number" data-validate='{"required":true}'
+                               id="pinvoice_comment_text"
+                               name="pinvoice[amount]"
+                               size="2"
+                               min="0"
+                               class="admin__control-text qty input-text required-entry"
+                               data-validate="{number: true, required:true, 'validate-greater-than-zero':true}"/>
+                    </div>
+                </div>
+                <div class="admin__page-section-item-content order-totals-actions">
+                    <label for="pinvoice_comment_text" class="admin__field-label">
+                        <span><?= $block->escapeHtml(__('Status')) ?></span>
+                    </label>
+                    <div class="admin__field">
+                        <select class="admin__control-select"
+                               name="pinvoice[status]">
+                            <option value="0">Pending</option>
+                            <option value="1">Processing</option>
+                            <option value="2">Completed</option>
+                            <option value="2">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="actions">
+                        <?= $block->getChildHtml('submit_button') ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</form>
+<?php
+$scriptString = <<<script
+
+require(['prototype'], function(){
+
+});
+script;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>

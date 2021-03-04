@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="MW\PInvoice\Ui\Component\DataProvider">
+        <plugin name="mw_pinvoice_filter" type="MW\PInvoice\Plugin\ListingDataProvider"/>
+    </type>
+    <!--Add a button-->
+    <type name="Magento\Sales\Block\Adminhtml\Order\View">
+        <plugin name="mw_pinvoice_order_view_button_plugin" type="MW\PInvoice\Plugin\Sales\Block\Adminhtml\Order\View"/>
+    </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mw_pinvoice_pi_listing_data_source" xsi:type="string">MW\PInvoice\Model\ResourceModel\PInvoice\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="MW\PInvoice\Model\ResourceModel\PInvoice\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mw_pinvoice_invoice_payment</argument>
+            <argument name="resourceModel" xsi:type="string">MW\PInvoice\Model\ResourceModel\PInvoice</argument>
+        </arguments>
+    </virtualType>
+</config>

@@ -56,19 +56,6 @@
                 </settings>
             </filterSelect>
         </filters>
-        <massaction name="listing_massaction">
-            <action name="pdfinvoices_order" class="Magento\Sales\Ui\Component\Control\PdfAction">
-                <argument name="data" xsi:type="array">
-                    <item name="config" xsi:type="array">
-                        <item name="pdfAction" xsi:type="string">sales/invoice/pdfinvoices</item>
-                    </item>
-                </argument>
-                <settings>
-                    <type>pdfinvoices_order</type>
-                    <label translate="true">PDF Invoices</label>
-                </settings>
-            </action>
-        </massaction>
         <paging name="listing_paging"/>
     </listingToolbar>
     <columns name="mw_pinvoice_columns">
@@ -138,16 +125,16 @@
                 </item>
             </argument>
         </column>
-<!--        <actionsColumn name="actions" class="MW\PInvoice\Ui\Component\Listing\Column\ViewAction">-->
-<!--            <argument name="data" xsi:type="array">-->
-<!--                <item name="config" xsi:type="array">-->
-<!--                    <item name="viewUrlPath" xsi:type="string">sales/order_invoice/view</item>-->
-<!--                    <item name="urlEntityParamName" xsi:type="string">invoice_id</item>-->
-<!--                </item>-->
-<!--            </argument>-->
-<!--            <settings>-->
-<!--                <indexField>ip_id</indexField>-->
-<!--            </settings>-->
-<!--        </actionsColumn>-->
+        <actionsColumn name="actions" class="MW\PInvoice\Ui\Component\Listing\Column\ViewAction">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="changeUrlPath" xsi:type="string">mwpi/pinvoice/change</item>
+                    <item name="urlEntityParamName" xsi:type="string">ip_id</item>
+                </item>
+            </argument>
+            <settings>
+                <indexField>ip_id</indexField>
+            </settings>
+        </actionsColumn>
     </columns>
 </listing>

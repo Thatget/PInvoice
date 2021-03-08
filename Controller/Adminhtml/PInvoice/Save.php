@@ -25,6 +25,8 @@ class Save extends \Magento\Backend\App\Action implements HttpPostActionInterfac
      */
     const ADMIN_RESOURCE = 'Magento_Sales::sales_invoice';
 
+    const STATUS_COMPLETE = 2;
+
     /**
      * @var InvoiceSender
      */
@@ -99,18 +101,14 @@ class Save extends \Magento\Backend\App\Action implements HttpPostActionInterfac
      */
     protected function _prepareShipment($invoice)
     {
-        $invoiceData = $this->getRequest()->getParam('invoice');
         $itemArr = [];
-        if (!isset($invoiceData['items']) || empty($invoiceData['items'])) {
             $orderItems = $invoice->getOrder()->getItems();
             foreach ($orderItems as $item) {
                 $itemArr[$item->getId()] = (int)$item->getQtyOrdered();
             }
-        }
         $shipment = $this->shipmentFactory->create(
             $invoice->getOrder(),
-            isset($invoiceData['items']) ? $invoiceData['items'] : $itemArr,
-            $this->getRequest()->getPost('tracking')
+            $itemArr
         );
         if (!$shipment->getTotalQty()) {
             return false;
@@ -168,7 +166,9 @@ class Save extends \Magento\Backend\App\Action implements HttpPostActionInterfac
             $this->registry->register('current_invoice', $invoice);
 
             $mwpiCollection = $this->pinvoiceFactory->create();
-            $all = $mwpiCollection->getCollection()->addFieldToFilter('order_id', ['eq' => $orderId])->getData();
+            $all = $mwpiCollection->getCollection()
+                ->addFieldToFilter('status', ['eq' => (string)self::STATUS_COMPLETE])
+                ->addFieldToFilter('order_id', ['eq' => $orderId])->getData();
             $totalAmount = 0;
             if (!empty($all)){
                 foreach ($all as $item) {
@@ -185,53 +185,55 @@ class Save extends \Magento\Backend\App\Action implements HttpPostActionInterfac
 
             $mwpiCollection->setData($data);
             $mwpiCollection->save();
-            $totalAmount += (float)$data['amount'];
-            if ($totalAmount >= $orderGrandTotal) {
+            if ($data['status'] == (string)self::STATUS_COMPLETE) {
+                $totalAmount += (float)$data['amount'];
+                if ($totalAmount >= $orderGrandTotal) {
 
-                $invoice->register();
-                $invoice->getOrder()->setCustomerNoteNotify(!empty($data['send_email']));
-                $invoice->getOrder()->setIsInProcess(true);
+                    $invoice->register();
+                    $invoice->getOrder()->setCustomerNoteNotify(!empty($data['send_email']));
+                    $invoice->getOrder()->setIsInProcess(true);
 
-                $transactionSave = $this->_objectManager->create(
-                    \Magento\Framework\DB\Transaction::class
-                )->addObject(
-                    $invoice
-                )->addObject(
-                    $invoice->getOrder()
-                );
+                    $transactionSave = $this->_objectManager->create(
+                        \Magento\Framework\DB\Transaction::class
+                    )->addObject(
+                        $invoice
+                    )->addObject(
+                        $invoice->getOrder()
+                    );
 
-                $shipment = false;
-                if ((int)$invoice->getOrder()->getForcedShipmentWithInvoice()) {
-                    $shipment = $this->_prepareShipment($invoice);
-                    if ($shipment) {
-                        $transactionSave->addObject($shipment);
+                    $shipment = false;
+                    if ((int)$invoice->getOrder()->getForcedShipmentWithInvoice()) {
+                        $shipment = $this->_prepareShipment($invoice);
+                        if ($shipment) {
+                            $transactionSave->addObject($shipment);
+                        }
                     }
-                }
 
-                $transactionSave->save();
+                    $transactionSave->save();
 
-                // send invoice/shipment emails
-                try {
-                    if ($this->salesData->canSendNewInvoiceEmail()) {
-                        $this->invoiceSender->send($invoice);
-                    }
-                } catch (\Exception $e) {
-                    $this->_objectManager->get(\Psr\Log\LoggerInterface::class)->critical($e);
-                    $this->messageManager->addErrorMessage(__('We can\'t send the invoice email right now.'));
-                }
-                if ($shipment) {
+                    // send invoice/shipment emails
                     try {
-                        if ($this->salesData->canSendNewShipmentEmail()) {
-                            $this->shipmentSender->send($shipment);
+                        if ($this->salesData->canSendNewInvoiceEmail()) {
+                            $this->invoiceSender->send($invoice);
                         }
                     } catch (\Exception $e) {
                         $this->_objectManager->get(\Psr\Log\LoggerInterface::class)->critical($e);
-                        $this->messageManager->addErrorMessage(__('We can\'t send the shipment right now.'));
+                        $this->messageManager->addErrorMessage(__('We can\'t send the invoice email right now.'));
                     }
-                }
-                $this->messageManager->addSuccessMessage(__('The invoice has been created.'));
+                    if ($shipment) {
+                        try {
+                            if ($this->salesData->canSendNewShipmentEmail()) {
+                                $this->shipmentSender->send($shipment);
+                            }
+                        } catch (\Exception $e) {
+                            $this->_objectManager->get(\Psr\Log\LoggerInterface::class)->critical($e);
+                            $this->messageManager->addErrorMessage(__('We can\'t send the shipment right now.'));
+                        }
+                    }
+                    $this->messageManager->addSuccessMessage(__('The invoice has been created.'));
 
-                $this->_objectManager->get(\Magento\Backend\Model\Session::class)->getCommentText(true);
+                    $this->_objectManager->get(\Magento\Backend\Model\Session::class)->getCommentText(true);
+                }
             }
             return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);
         } catch (LocalizedException $e) {

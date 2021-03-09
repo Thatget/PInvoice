@@ -19,6 +19,9 @@
     </settings>
     <dataSource name="mw_pinvoice_pi_listing_data_source" component="Magento_Ui/js/grid/provider">
         <settings>
+        <storageConfig>
+                <param name="indexField" xsi:type="string">ip_id</param>
+            </storageConfig>
             <filterUrlParams>
                 <param name="order_id">*</param>
             </filterUrlParams>
@@ -42,20 +45,7 @@
                 </additionalParams>
             </settings>
         </exportButton>
-        <filterSearch name="fulltext"/>
-        <filters name="listing_filters">
-            <filterSelect name="store_id" provider="${ $.parentName }">
-                <settings>
-                    <options class="Magento\Store\Ui\Component\Listing\Column\Store\Options"/>
-                    <caption translate="true">All Store Views</caption>
-                    <label translate="true">Purchased From</label>
-                    <dataScope>store_id</dataScope>
-                    <imports>
-                        <link name="visible">ns = ${ $.ns }, componentType = column, index = ${ $.index }:visible</link>
-                    </imports>
-                </settings>
-            </filterSelect>
-        </filters>
+        <filters name="listing_filters"/>
         <paging name="listing_paging"/>
     </listingToolbar>
     <columns name="mw_pinvoice_columns">
@@ -73,19 +63,19 @@
         </settings>
         <selectionsColumn name="ids">
             <settings>
-                <indexField>entity_id</indexField>
+                <indexField>ip_id</indexField>
             </settings>
         </selectionsColumn>
         <column name="ip_id">
             <settings>
-                <filter>text</filter>
+                <filter>textRange</filter>
                 <label translate="true">PInvoice ID</label>
                 <sorting>asc</sorting>
             </settings>
         </column>
         <column name="amount">
             <settings>
-                <filter>text</filter>
+                <filter>textRange</filter>
                 <label translate="true">Amount</label>
             </settings>
         </column>
